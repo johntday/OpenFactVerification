@@ -52,7 +52,8 @@ def update(id: str, response_fact: str):
 
         cur.execute(
             """UPDATE twitter_tweets
-            SET response_fact = %s
+            SET response_fact = %s,
+            status = 'done'
             where id = %s"""
             , (
                 response_fact,
