@@ -27,6 +27,7 @@ def fetch():
         for row in rows:
             results.append(format_tweet(row))
 
+        print(results)
         return results
     except Exception as e:
         print(f"Error saving tweet to database: {e}")
