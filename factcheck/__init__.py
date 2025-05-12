@@ -22,7 +22,7 @@ logger = CustomLogger(__name__).getlog()
 class FactCheck:
     def __init__(
         self,
-        default_model: str = "gpt-4o",
+        default_model: str = "gpt-4.1",
         client: str = None,
         prompt: str = "chatgpt_prompt",
         retriever: str = "serper",

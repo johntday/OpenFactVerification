@@ -5,7 +5,7 @@ from logging.handlers import TimedRotatingFileHandler
 
 
 class CustomLogger:
-    def __init__(self, name: str, loglevel=logging.INFO):
+    def __init__(self, name: str, loglevel=logging.ERROR):
         """Initialize the CustomLogger class
 
         Args:

@@ -65,7 +65,7 @@ def get_content(content_id):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model", type=str, default="gpt-4o")
+    parser.add_argument("--model", type=str, default="gpt-4.1")
     parser.add_argument("--client", type=str, default=None, choices=CLIENTS.keys())
     parser.add_argument("--prompt", type=str, default="chatgpt_prompt")
     parser.add_argument("--retriever", type=str, default="serper")
