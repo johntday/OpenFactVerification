@@ -1,4 +1,5 @@
 import psycopg2
+from datetime import datetime
 
 DATABASE_URL = "postgresql://n8n:ImrfgtZHkK7Y9lnEvbSd@localhost:5432/n8ndb"
 
@@ -7,7 +8,7 @@ def format_tweet(row):
         'id': row[0],
         'user_screen_name': row[1],
         'full_text': row[2],
-        'created_at': row[3],
+        'created_at': f"{row[3].month}/{row[3].day}/{row[3].year} {row[3].minute}:{row[3].second}",
     }
 
 
