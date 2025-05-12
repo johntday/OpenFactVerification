@@ -1,7 +1,6 @@
 import psycopg2
 
-DATABASE_URL = "postgresql://postgres:postgres@localhost:5432/n8n"
-
+DATABASE_URL = "postgresql://n8n:ImrfgtZHkK7Y9lnEvbSd@localhost:5432/n8ndb"
 
 def format_tweet(row):
     return {
