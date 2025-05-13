@@ -12,7 +12,7 @@ async def main():
             try:
                 factcheck_instance = FactCheck()
                 results = factcheck_instance.check_text(
-                    row['full_text'].replace("'", "''")
+                    row['full_text']
                 )
 
                 results['metadata'] = {
@@ -25,10 +25,10 @@ async def main():
 
                 print( results_str )
 
-                db.update(
-                    row['id'],
-                    results_str
-                )
+                # db.update(
+                #     row['id'],
+                #     results_str
+                # )
 
             except Exception as e:
                 print(f"Error: {e}")

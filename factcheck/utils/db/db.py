@@ -28,6 +28,7 @@ def fetch(status: str) -> list[dict[str, str]] | None:
         for row in rows:
             results.append(format_tweet(row))
 
+        conn.commit()
         return results
     except Exception as e:
         print(f"Error saving tweet to database: {e}")
