@@ -8,6 +8,7 @@ CHECK_INTERVAL = 60 * 5
 async def main():
     while True:
         for row in db.fetch('none'):
+            print(f"??? {row['id']}: {row['user_screen_name']}")
             try:
                 factcheck_instance = FactCheck()
                 results = factcheck_instance.check_text(row['full_text'])
