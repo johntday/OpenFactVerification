@@ -11,9 +11,13 @@ async def main():
             print(f"??? {row['id']}: {row['user_screen_name']}")
             try:
                 factcheck_instance = FactCheck()
-                results = factcheck_instance.check_text(
-                    row['full_text']
-                )
+                results = None
+                try:
+                    results = factcheck_instance.check_text(
+                        row['full_text']
+                    )
+                except Exception as e:
+                    pass
 
                 results['metadata'] = {
                     'id': row['id'],
