@@ -46,7 +46,7 @@ def fetch(status: str) -> list[dict[str, str]] | None:
             pass
 
 
-def update(id: str, response_fact: str):
+def update(id: str, response_fact: str, status: str) -> None:
     try:
         conn = psycopg2.connect(DATABASE_URL)
         cur = conn.cursor()
@@ -54,11 +54,12 @@ def update(id: str, response_fact: str):
         cur.execute(
             """UPDATE twitter_tweets
             SET response_fact = %s,
-            status = 'fact:done'
+            status = %s
             where id = %s"""
             , (
                 response_fact,
-                id
+                status,
+                id,
             ))
 
         conn.commit()
