@@ -3,7 +3,7 @@ import json
 from factcheck import FactCheck
 from factcheck.utils.db import db
 import argparse
-
+from factcheck.utils.llmclient import CLIENTS
 from factcheck.utils.multimodal import modal_normalization
 from factcheck.utils.utils import load_yaml
 
