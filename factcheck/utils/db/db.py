@@ -59,6 +59,8 @@ def update(id: str, response_fact: str):
                 response_fact,
                 id
             ))
+
+        conn.commit()
     except Exception as e:
         print(f"Error saving tweet to database: {e}")
     finally:
