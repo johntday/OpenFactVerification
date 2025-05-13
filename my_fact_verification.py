@@ -6,7 +6,7 @@ from factcheck.utils.db import db
 CHECK_INTERVAL = 60 * 5
 
 async def main():
-    while True:
+    # while True:
         for row in db.fetch('fact'):
             print(f"??? {row['id']}: {row['user_screen_name']}")
             try:
@@ -38,7 +38,7 @@ async def main():
                 print(f"Error: {e}")
                 continue
 
-        await asyncio.sleep(CHECK_INTERVAL)
+        # await asyncio.sleep(CHECK_INTERVAL)
 
 
 if __name__ == "__main__":
