@@ -114,7 +114,6 @@ class FactCheckOutput:
     usage: PipelineUsage = None
     claim_detail: List[ClaimDetail] = None
     summary: FCSummary = None
-    metadata: dict = None
 
     def attribute_check(self) -> bool:
         for field in self.__dataclass_fields__.values():
