@@ -12,7 +12,7 @@ async def main():
             try:
                 factcheck_instance = FactCheck()
                 results = factcheck_instance.check_text(
-                    row['full_text']
+                    row['full_text'].replace("'", "''")
                 )
 
                 results['metadata'] = {
