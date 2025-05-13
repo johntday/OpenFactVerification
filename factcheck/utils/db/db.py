@@ -12,15 +12,15 @@ def format_tweet(row):
     }
 
 
-def fetch() -> list[dict[str, str]] | None:
+def fetch(status: str) -> list[dict[str, str]] | None:
     results = []
     try:
         conn = psycopg2.connect(DATABASE_URL)
         cur = conn.cursor()
 
-        cur.execute("""select id, user_screen_name, full_text, to_timestamp(created_at_unix) AT TIME ZONE 'America/Chicago'
+        cur.execute(f"""select id, user_screen_name, full_text, to_timestamp(created_at_unix) AT TIME ZONE 'America/Chicago'
         from twitter_tweets 
-        where status = 'fact' 
+        where status = '{status}'
         order by created_at_unix desc 
         limit 10""")
 
@@ -53,7 +53,7 @@ def update(id: str, response_fact: str):
         cur.execute(
             """UPDATE twitter_tweets
             SET response_fact = %s,
-            status = 'done'
+            status = 'fact:done'
             where id = %s"""
             , (
                 response_fact,
