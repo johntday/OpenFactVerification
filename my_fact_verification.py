@@ -34,7 +34,7 @@ async def main():
                     default_model=args.model, client=args.client, api_config=api_config, prompt=args.prompt, retriever=args.retriever
                 )
 
-                content = modal_normalization(args.modal, args.input)
+                content = modal_normalization(args.modal, row['full_text'])
                 result = factcheck.check_text(content)
 
                 result['metadata'] = {
