@@ -1,7 +1,9 @@
+import os
+
 import psycopg2
 from datetime import datetime
 
-DATABASE_URL = "postgresql://n8n:ImrfgtZHkK7Y9lnEvbSd@localhost:5432/n8ndb"
+DATABASE_URL = os.getenv("DATABASE_URL")
 
 def format_tweet(row):
     return {
@@ -28,7 +30,7 @@ def fetch(status: str) -> list[dict[str, str]] | None:
         for row in rows:
             results.append(format_tweet(row))
 
-        conn.commit()
+        # conn.commit()
         return results
     except Exception as e:
         print(f"Error saving tweet to database: {e}")
