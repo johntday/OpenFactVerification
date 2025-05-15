@@ -6,11 +6,29 @@ import argparse
 from factcheck.utils.llmclient import CLIENTS
 from factcheck.utils.multimodal import modal_normalization
 from factcheck.utils.utils import load_yaml
+import requests
+import json
 from datetime import datetime
 from dotenv import load_dotenv
 
 load_dotenv()
 DATABASE_URL = os.getenv('DATABASE_URL')
+FACT_API_KEY = os.getenv("FACT_API_KEY")
+FACT_API_ENDPOINT = os.getenv("FACT_API_ENDPOINT")
+
+def post_fact(data: dict):
+    headers = {'x-api-key': FACT_API_KEY, 'Content-Type': 'application/json'}
+
+    if not data or not data['id'] or not data['content']:
+        raise ValueError(f"Required values: id={data['id']}, content={data['content']}")
+
+    try:
+        response = requests.post(FACT_API_ENDPOINT, json=data, headers=headers)
+        response.raise_for_status()
+        return response
+    except requests.exceptions.RequestException as e:
+        print(f"An error occurred: {e}")
+        return None
 
 def format_unix_timestamp(unix_timestamp) -> str:
     return datetime.utcfromtimestamp(unix_timestamp).strftime('%Y-%m-%d %H:%M')
@@ -55,6 +73,7 @@ def fetch(status: str):
                 conn.close()
         except Exception as e:
             pass
+        return results
 
 def update(id: str, response_fact: str, status: str) -> None:
     try:
@@ -128,13 +147,13 @@ def main():
                 'user_screen_name': row['user_screen_name'],
             }
 
-            # print(json.dumps(result, indent=4))
-
             update(
                 id=row['id'],
                 response_fact=json.dumps(result),
                 status='post',
             )
+
+            post_fact(result)
 
         except Exception as e:
             print(f"Error: {e}")
