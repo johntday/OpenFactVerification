@@ -1,4 +1,6 @@
 import os
+import sys
+import traceback
 
 import psycopg2
 from datetime import datetime
@@ -48,7 +50,8 @@ def fetch(status: str) -> list[dict[str, str]] | None:
         # conn.commit()
         return results
     except Exception as e:
-        print(f"Error saving tweet to database: {e}")
+        print(f"Error with fetch: status={status}: {e}")
+        traceback.print_exception(type(e), e, sys.exc_info()[2], file=sys.stdout)
         return results
     finally:
         try:
@@ -88,7 +91,8 @@ def update(id: str, response_fact: str, status: str) -> None:
 
         conn.commit()
     except Exception as e:
-        print(f"Error saving tweet to database: {e}")
+        print(f"Error with update: id={id}, response_fact={response_fact[:25]}, status={status}:  {e}")
+        traceback.print_exception(type(e), e, sys.exc_info()[2], file=sys.stdout)
     finally:
         try:
             if cur:
