@@ -3,7 +3,11 @@ import os
 import psycopg2
 from datetime import datetime
 
-DATABASE_URL = os.getenv("DATABASE_URL")
+DATABASE_NAME = os.getenv("DATABASE_NAME")
+DATABASE_USER = os.getenv("DATABASE_USER")
+DATABASE_PASSWORD = os.getenv("DATABASE_PASSWORD")
+DATABASE_HOST = os.getenv("DATABASE_HOST")
+DATABASE_PORT = os.getenv("DATABASE_PORT")
 
 def format_tweet(row):
     return {
@@ -17,7 +21,14 @@ def format_tweet(row):
 def fetch(status: str) -> list[dict[str, str]] | None:
     results = []
     try:
-        conn = psycopg2.connect(DATABASE_URL)
+        #conn = psycopg2.connect(DATABASE_URL)
+        conn = psycopg2.connect(
+                database=DATABASE_NAME,
+                user=DATABASE_USER,
+                password=DATABASE_PASSWORD,
+                host=DATABASE_HOST,
+                port=DATABASE_PORT,
+        )
         cur = conn.cursor()
 
         cur.execute(f"""select id, user_screen_name, full_text, to_timestamp(created_at_unix) AT TIME ZONE 'America/Chicago'
@@ -50,7 +61,14 @@ def fetch(status: str) -> list[dict[str, str]] | None:
 
 def update(id: str, response_fact: str, status: str) -> None:
     try:
-        conn = psycopg2.connect(DATABASE_URL)
+        #conn = psycopg2.connect(DATABASE_URL)
+        conn = psycopg2.connect(
+                database=DATABASE_NAME,
+                user=DATABASE_USER,
+                password=DATABASE_PASSWORD,
+                host=DATABASE_HOST,
+                port=DATABASE_PORT,
+        )
         cur = conn.cursor()
 
         cur.execute(
