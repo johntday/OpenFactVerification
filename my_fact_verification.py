@@ -156,7 +156,7 @@ def main():
 
             post_fact({
                 'id': row['id'],
-                'content': result,
+                'content': result_str,
             })
 
         except Exception as e:
