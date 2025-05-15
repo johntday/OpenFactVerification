@@ -153,7 +153,10 @@ def main():
                 status='post',
             )
 
-            post_fact(result)
+            post_fact({
+                'id': row['id'],
+                'content': result,
+            })
 
         except Exception as e:
             print(f"Error: {e}")
