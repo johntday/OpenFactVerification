@@ -4,18 +4,21 @@ import psycopg2
 from datetime import datetime
 
 DATABASE_URL = os.getenv("DATABASE_URL")
-DATABASE_NAME = os.getenv("DATABASE_NAME")
-DATABASE_USER = os.getenv("DATABASE_USER")
-DATABASE_PASSWORD = os.getenv("DATABASE_PASSWORD")
-DATABASE_HOST = os.getenv("DATABASE_HOST")
-DATABASE_PORT = os.getenv("DATABASE_PORT")
+# DATABASE_NAME = os.getenv("DATABASE_NAME")
+# DATABASE_USER = os.getenv("DATABASE_USER")
+# DATABASE_PASSWORD = os.getenv("DATABASE_PASSWORD")
+# DATABASE_HOST = os.getenv("DATABASE_HOST")
+# DATABASE_PORT = os.getenv("DATABASE_PORT")
+
+def format_unix_timestamp(unix_timestamp) -> str:
+    return datetime.utcfromtimestamp(unix_timestamp).strftime('%Y-%m-%d %H:%M')
 
 def format_tweet(row):
     return {
         'id': row[0],
         'user_screen_name': row[1],
         'full_text': row[2],
-        'created_at': f"{row[3].month}/{row[3].day}/{row[3].year} {row[3].minute}:{row[3].second} CST",
+        'created_at': format_unix_timestamp(row[3]),
     }
 
 
@@ -32,7 +35,7 @@ def fetch(status: str) -> list[dict[str, str]] | None:
         # )
         cur = conn.cursor()
 
-        cur.execute(f"""select id, user_screen_name, full_text, to_timestamp(created_at_unix) AT TIME ZONE 'America/Chicago'
+        cur.execute(f"""select id, user_screen_name, full_text, created_at_unix
         from twitter_tweets 
         where status = '{status}'
         order by created_at_unix desc 
