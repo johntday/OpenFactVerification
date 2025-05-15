@@ -118,10 +118,7 @@ def main():
     parser.add_argument("--api_config", type=str, default="factcheck/config/api_config.yaml")
     args = parser.parse_args()
 
-    print(f'FACT_API_ENDPOINT={os.environ["FACT_API_ENDPOINT"]}')
-    print(f'FACT_API_KEY={os.environ["FACT_API_KEY"]}')
-    print(f'DATABASE_URL={os.environ["DATABASE_URL"]}')
-    print()
+    print("START")
 
     fetch_results = fetch('fact')
 
