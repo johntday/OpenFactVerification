@@ -147,15 +147,16 @@ def main():
                 'user_screen_name': row['user_screen_name'],
             }
 
+            result_str = json.dumps(result)
             update(
                 id=row['id'],
-                response_fact=json.dumps(result),
+                response_fact=result_str,
                 status='post',
             )
 
             post_fact({
                 'id': row['id'],
-                'content': result,
+                'content': result_str,
             })
 
         except Exception as e:
