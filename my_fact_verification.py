@@ -1,15 +1,92 @@
 import json
 import os
-
+import psycopg2
 from factcheck import FactCheck
-from factcheck.utils.db import db
 import argparse
 from factcheck.utils.llmclient import CLIENTS
 from factcheck.utils.multimodal import modal_normalization
 from factcheck.utils.utils import load_yaml
+from datetime import datetime
 from dotenv import load_dotenv
 
 load_dotenv()
+DATABASE_URL = os.getenv('DATABASE_URL')
+
+def format_unix_timestamp(unix_timestamp) -> str:
+    return datetime.utcfromtimestamp(unix_timestamp).strftime('%Y-%m-%d %H:%M')
+
+def format_tweet(row):
+    return {
+        'id': row[0],
+        'user_screen_name': row[1],
+        'full_text': row[2],
+        'created_at': format_unix_timestamp(row[3]),
+    }
+
+def fetch(status: str):
+    results = []
+    try:
+        conn = psycopg2.connect(DATABASE_URL)
+        cur = conn.cursor()
+
+        cur.execute(f"""select id, user_screen_name, full_text, created_at_unix
+        from twitter_tweets 
+        where status = '{status}'
+        order by created_at_unix desc 
+        limit 10""")
+
+        rows = cur.fetchall()
+        for row in rows:
+            results.append(format_tweet(row))
+
+        # conn.commit()
+        return results
+    except Exception as e:
+        print(f"Error with fetch: status={status}: {e}")
+        return results
+    finally:
+        try:
+            if cur:
+                cur.close()
+        except Exception as e:
+            pass
+        try:
+            if conn:
+                conn.close()
+        except Exception as e:
+            pass
+
+def update(id: str, response_fact: str, status: str) -> None:
+    try:
+        conn = psycopg2.connect(DATABASE_URL)
+        cur = conn.cursor()
+
+        cur.execute(
+            """UPDATE twitter_tweets
+            SET response_fact = %s,
+            status = %s
+            where id = %s"""
+            , (
+                response_fact,
+                status,
+                id,
+            ))
+
+        conn.commit()
+    except Exception as e:
+        print(f"Error with update: id={id}, response_fact={response_fact[:25]}, status={status}:  {e}")
+        traceback.print_exception(type(e), e, sys.exc_info()[2], file=sys.stdout)
+    finally:
+        try:
+            if cur:
+                cur.close()
+        except Exception as e:
+            pass
+        try:
+            if conn:
+                conn.close()
+        except Exception as e:
+            pass
 
 
 def main():
@@ -28,7 +105,9 @@ def main():
     print(f'DATABASE_URL={os.environ["DATABASE_URL"]}')
     print()
 
-    for row in db.fetch('fact'):
+    fetch_results = fetch('fact')
+
+    for row in fetch_results:
         print(f"??? {row['id']}: {row['user_screen_name']}")
         try:
             try:
@@ -52,7 +131,7 @@ def main():
 
             # print(json.dumps(result, indent=4))
 
-            db.update(
+            update(
                 id=row['id'],
                 response_fact=json.dumps(result),
                 status='post',
