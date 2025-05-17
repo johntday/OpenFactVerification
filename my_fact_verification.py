@@ -1,6 +1,8 @@
 import json
 import os
 import psycopg2
+from openai import OpenAI
+
 from factcheck import FactCheck
 import argparse
 from factcheck.utils.llmclient import CLIENTS
@@ -15,6 +17,11 @@ load_dotenv()
 DATABASE_URL = os.getenv('DATABASE_URL')
 FACT_API_KEY = os.getenv("FACT_API_KEY")
 FACT_API_ENDPOINT = os.getenv("FACT_API_ENDPOINT")
+PROMPT = """Please summarize the following details of a <statement> for truthiness into a tweet.
+<statement>
+xxx
+</statement>
+"""
 
 def post_fact(data: dict):
     headers = {'x-api-key': FACT_API_KEY, 'Content-Type': 'application/json'}
@@ -75,7 +82,7 @@ def fetch(status: str):
             pass
         return results
 
-def update(id: str, response_fact: str, status: str) -> None:
+def update(id: str, response_fact: str, status: str, tweet: str) -> None:
     try:
         conn = psycopg2.connect(DATABASE_URL)
         cur = conn.cursor()
@@ -83,11 +90,13 @@ def update(id: str, response_fact: str, status: str) -> None:
         cur.execute(
             """UPDATE twitter_tweets
             SET response_fact = %s,
-            status = %s
+            status = %s,
+            tweet = %s
             where id = %s"""
             , (
                 response_fact,
                 status,
+                tweet,
                 id,
             ))
 
@@ -105,6 +114,25 @@ def update(id: str, response_fact: str, status: str) -> None:
                 conn.close()
         except Exception as e:
             pass
+
+
+def tweet_summary(text: str,
+                  model="gpt-4.1-mini",
+                  temperature=0.2
+                  ):
+
+    messages = [
+        {'role': 'system', 'content': 'You are an assistant that creates engaging tweets.'},
+        {'role': 'user', 'content': PROMPT.replace('xxx', text)},
+    ]
+    client = OpenAI()
+    response = client.chat.completions.create(
+        model=model,
+        messages=messages,
+        temperature=temperature,
+    )
+    return response.choices[0].message.content
+
 
 
 def main():
@@ -138,6 +166,8 @@ def main():
             content = modal_normalization(args.modal, row['full_text'])
             result = factcheck.check_text(content)
 
+            summary = tweet_summary(text=result)
+
             result['metadata'] = {
                 'id': row['id'],
                 'created_at': row['created_at'],
@@ -145,10 +175,12 @@ def main():
             }
 
             result_str = json.dumps(result)
+
             update(
                 id=row['id'],
                 response_fact=result_str,
                 status='post',
+                tweet=summary,
             )
 
             post_fact({

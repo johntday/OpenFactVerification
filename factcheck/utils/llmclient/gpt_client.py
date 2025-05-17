@@ -6,7 +6,7 @@ from .base import BaseClient
 class GPTClient(BaseClient):
     def __init__(
         self,
-        model: str = "gpt-4-turbo",
+        model: str = "gpt-4.1",
         api_config: dict = None,
         max_requests_per_minute=200,
         request_window=60,
