@@ -166,7 +166,7 @@ def main():
             content = modal_normalization(args.modal, row['full_text'])
             result = factcheck.check_text(content)
 
-            summary = tweet_summary(text=result)
+            summary = tweet_summary(text=json.dumps(result))
 
             result['metadata'] = {
                 'id': row['id'],
