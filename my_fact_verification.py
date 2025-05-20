@@ -45,7 +45,7 @@ def format_tweet(row):
         'id': row[0],
         'user_screen_name': row[1],
         'full_text': row[2],
-        'created_at': format_unix_timestamp(row[3]),
+        'created_at': row[3],
     }
 
 def fetch(status: str):
