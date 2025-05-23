@@ -14,6 +14,7 @@ from datetime import datetime
 from dotenv import load_dotenv
 
 load_dotenv()
+NTFY_TOKEN = os.getenv('NTFY_TOKEN', '')
 DATABASE_URL = os.getenv('DATABASE_URL')
 FACT_API_KEY = os.getenv("FACT_API_KEY")
 FACT_API_ENDPOINT = os.getenv("FACT_API_ENDPOINT")
@@ -134,6 +135,15 @@ def tweet_summary(text: str,
     return response.choices[0].message.content
 
 
+def ntfy():
+    requests.post(f"https://ntfy.sh/{NTFY_TOKEN}",
+                  data="my_fact_verification.py",
+                  headers={
+                      "Title": "ERROR",
+                      "Priority": "urgent",
+                      "Tags": "warning,skull"
+                  })
+
 
 def main():
     parser = argparse.ArgumentParser()
@@ -190,6 +200,7 @@ def main():
 
         except Exception as e:
             print(f"Error: {e}")
+            ntfy()
             continue
 
 
