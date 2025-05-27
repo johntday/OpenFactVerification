@@ -182,6 +182,7 @@ def main():
                 'id': row['id'],
                 'created_at': row['created_at'],
                 'user_screen_name': row['user_screen_name'],
+                'tweet': summary,
             }
 
             result_str = json.dumps(result)
