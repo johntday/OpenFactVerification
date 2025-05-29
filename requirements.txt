@@ -10,3 +10,4 @@ pandas
 playwright
 playwright_stealth
 tiktoken
+pytz

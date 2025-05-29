@@ -2,7 +2,7 @@ import json
 import os
 import psycopg2
 from openai import OpenAI
-
+import pytz
 from factcheck import FactCheck
 import argparse
 from factcheck.utils.llmclient import CLIENTS
@@ -48,6 +48,12 @@ def format_tweet(row):
         'full_text': row[2],
         'created_at': row[3],
     }
+
+def get_cst_timestamp() -> str:
+    timezone = pytz.timezone('America/Chicago')
+    current_time = datetime.now(timezone)
+    formatted_timestamp = current_time.strftime("%Y-%m-%d %H:%M:%S %Z%z")
+    return formatted_timestamp
 
 def fetch(status: str):
     results = []
@@ -161,7 +167,7 @@ def main():
     fetch_results = fetch('fact')
 
     for row in fetch_results:
-        print(f"??? {row['id']}: {row['user_screen_name']}")
+        print(f"{get_cst_timestamp()}  {row['id']}  {row['user_screen_name']}")
         try:
             try:
                 api_config = load_yaml(args.api_config)
