@@ -8,10 +8,10 @@ import argparse
 from factcheck.utils.llmclient import CLIENTS
 from factcheck.utils.multimodal import modal_normalization
 from factcheck.utils.utils import load_yaml
-import requests
 import json
 from datetime import datetime
 from dotenv import load_dotenv
+import redis
 
 load_dotenv()
 NTFY_TOKEN = os.getenv('NTFY_TOKEN', '')
@@ -23,19 +23,18 @@ PROMPT = """Please summarize the following details of a <statement> for truthine
 xxx
 </statement>
 """
+r = redis.Redis(host='ballast.proxy.rlwy.net', port=6379, password='GGstjdelVYYkxVFRVxwtEkfMtWwrnlZW') # Replace with your server details
 
-def post_fact(data: dict):
-    headers = {'x-api-key': FACT_API_KEY, 'Content-Type': 'application/json'}
 
+def post_fact(data: dict) -> None:
     if not data or not data['id'] or not data['content']:
         raise ValueError(f"Required values: id={data['id']}, content={data['content']}")
 
     try:
-        response = requests.post(FACT_API_ENDPOINT, json=data, headers=headers)
-        response.raise_for_status()
-        return response
-    except requests.exceptions.RequestException as e:
-        print(f"An error occurred: {e}")
+        r.set(data['id'], data['content'])
+        return None
+    except Exception as e:
+        print(f"ERROR posting to redis: {e}")
         return None
 
 def format_unix_timestamp(unix_timestamp) -> str:
