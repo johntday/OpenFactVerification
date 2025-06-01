@@ -16,14 +16,13 @@ import redis
 load_dotenv()
 NTFY_TOKEN = os.getenv('NTFY_TOKEN', '')
 DATABASE_URL = os.getenv('DATABASE_URL')
-FACT_API_KEY = os.getenv("FACT_API_KEY")
-FACT_API_ENDPOINT = os.getenv("FACT_API_ENDPOINT")
+REDIS_URL = os.getenv("FACT_API_ENDPOINT")
 PROMPT = """Please summarize the following details of a <statement> for truthiness into a tweet.
 <statement>
 xxx
 </statement>
 """
-r = redis.Redis(host='ballast.proxy.rlwy.net', port=6379, password='GGstjdelVYYkxVFRVxwtEkfMtWwrnlZW') # Replace with your server details
+r = redis.from_url(REDIS_URL)
 
 
 def post_fact(data: dict) -> None:
