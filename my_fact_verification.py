@@ -14,9 +14,12 @@ from dotenv import load_dotenv
 import redis
 
 load_dotenv()
-NTFY_TOKEN = os.getenv('NTFY_TOKEN', '')
+NTFY_TOKEN = os.getenv('NTFY_TOKEN')
 DATABASE_URL = os.getenv('DATABASE_URL')
-REDIS_URL = os.getenv("FACT_API_ENDPOINT")
+REDIS_URL = os.getenv("REDIS_URL")
+if not DATABASE_URL or not REDIS_URL or not NTFY_TOKEN:
+    print("Config value error. Check '.env' file")
+    exit(1)
 PROMPT = """Please summarize the following details of a <statement> for truthiness into a tweet.
 <statement>
 xxx
@@ -165,7 +168,7 @@ def main():
     fetch_results = fetch('fact')
 
     for row in fetch_results:
-        print(f"{get_cst_timestamp()}  {row['id']}  {row['user_screen_name']}")
+        print(f"[{get_cst_timestamp()}]  {row['id']}  {row['user_screen_name']}")
         try:
             try:
                 api_config = load_yaml(args.api_config)
