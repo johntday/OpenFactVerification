@@ -61,7 +61,7 @@ def get_cst_timestamp() -> str:
     formatted_timestamp = current_time.strftime("%Y-%m-%d %H:%M:%S %Z%z")
     return formatted_timestamp
 
-def fetch(status: str):
+def fetch():
     results = []
     try:
         conn = psycopg2.connect(DATABASE_URL)
@@ -69,7 +69,7 @@ def fetch(status: str):
 
         cur.execute(f"""select id, user_screen_name, full_text, created_at_unix
         from twitter_tweets 
-        where status = '{status}'
+        where status in ('fact', 'manual')
         order by created_at_unix desc 
         limit 10""")
 
@@ -80,7 +80,7 @@ def fetch(status: str):
         # conn.commit()
         return results
     except Exception as e:
-        print(f"Error with fetch: status={status}: {e}")
+        print(f"Error with fetch: {e}")
         return results
     finally:
         try:
@@ -197,7 +197,7 @@ def main():
 
     print("START")
 
-    fetch_results = fetch('fact')
+    fetch_results = fetch()
 
     for row in fetch_results:
         print(f"[{get_cst_timestamp()}]  {row['id']}  {row['user_screen_name']}")
