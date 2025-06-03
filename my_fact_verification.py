@@ -134,7 +134,7 @@ def tweet_summary(result,
                   temperature=0.2
                   ) -> str | None:
     SYSTEM_PROMPT = ("You will receive a statement and a list of claims. Those claims will already have references, source quotes, "
-                     "and a factuality score. Your task is to evaluate all of this together and provide a brief summary.")
+                     "and a factuality score. Your task is to evaluate all of this together and provide a brief summary of about 70 words or less.")
 
     def valid_claims() -> list:
         claims = []
