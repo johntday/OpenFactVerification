@@ -129,33 +129,36 @@ def update(id: str, response_fact: str, status: str, tweet: str) -> None:
             pass
 
 
-def tweet_summary(result: FactCheckOutput,
+def tweet_summary(result,
                   model="gpt-4.1-mini",
                   temperature=0.2
-                  ):
+                  ) -> str | None:
     SYSTEM_PROMPT = ("You will receive a statement and a list of claims. Those claims will already have references, source quotes, "
-                     "and a factuality score. Your task is to evaluate all of this together and provide a comprehensive conclusion.")
+                     "and a factuality score. Your task is to evaluate all of this together and provide a brief summary.")
 
     def valid_claims() -> list:
         claims = []
-        for claim in result.claim_detail:
-            if not claim.checkworthy:
+        for claim in result["claim_detail"]:
+            if not claim["checkworthy"]:
                 continue
             new_claim = {
-                'claim_id': claim.id,
-                'claim_text': claim.claim,
-                'claim_factuality_score': claim.factuality,
-                'claim_evidences': [x for x in claim.evidences if x['relationship'] in ['REFUTES', 'SUPPORTS']],
+                'claim_id': claim["id"],
+                'claim_text': claim["claim"],
+                'claim_factuality_score': claim["factuality"],
+                'claim_evidences': [x for x in claim["evidences"] if x['relationship'] in ['REFUTES', 'SUPPORTS']],
             }
             claims.append(new_claim)
 
         return claims
 
     user_content = {
-        'statement': result.raw_text,
-        'factuality_score': result.summary.factuality,
+        'statement': result["raw_text"],
+        'factuality_score': result["summary"]["factuality"],
         'claims': valid_claims(),
     }
+
+    if not user_content['claims']:
+        return 'No check-worthy claims were found'
 
     messages = [
         {'role': 'system', 'content': SYSTEM_PROMPT},
@@ -212,7 +215,6 @@ def main():
             result = factcheck.check_text(content)
 
             summary = tweet_summary(result=result)
-            print(summary)
 
             result['metadata'] = {
                 'id': row['id'],
