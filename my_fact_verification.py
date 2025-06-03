@@ -1,10 +1,13 @@
 import json
 import os
 import psycopg2
+import requests
 from openai import OpenAI
 import pytz
 from factcheck import FactCheck
 import argparse
+
+from factcheck.utils.data_class import FactCheckOutput
 from factcheck.utils.llmclient import CLIENTS
 from factcheck.utils.multimodal import modal_normalization
 from factcheck.utils.utils import load_yaml
@@ -20,11 +23,13 @@ REDIS_URL = os.getenv("REDIS_URL")
 if not DATABASE_URL or not REDIS_URL or not NTFY_TOKEN:
     print("Config value error. Check '.env' file")
     exit(1)
-PROMPT = """Please summarize the following details of a <statement> for truthiness into a tweet.
-<statement>
-xxx
-</statement>
+SYSTEM_PROMPT = """
+You will receive a statement and a list of claims. Those claims will already have references and source quotes. Your task is to
+evaluate all of this together and provide a comprehensive conclusion. You will provide a score from 0 - 100 how truthfull you
+think this statement is and a description of why you think so.
 """
+
+
 r = redis.from_url(REDIS_URL)
 
 
@@ -124,14 +129,37 @@ def update(id: str, response_fact: str, status: str, tweet: str) -> None:
             pass
 
 
-def tweet_summary(text: str,
+def tweet_summary(result: FactCheckOutput,
                   model="gpt-4.1-mini",
                   temperature=0.2
                   ):
+    SYSTEM_PROMPT = ("You will receive a statement and a list of claims. Those claims will already have references, source quotes, "
+                     "and a factuality score. Your task is to evaluate all of this together and provide a comprehensive conclusion.")
+
+    def valid_claims() -> list:
+        claims = []
+        for claim in result.claim_detail:
+            if not claim.checkworthy:
+                continue
+            new_claim = {
+                'claim_id': claim.id,
+                'claim_text': claim.claim,
+                'claim_factuality_score': claim.factuality,
+                'claim_evidences': [x for x in claim.evidences if x['relationship'] in ['REFUTES', 'SUPPORTS']],
+            }
+            claims.append(new_claim)
+
+        return claims
+
+    user_content = {
+        'statement': result.raw_text,
+        'factuality_score': result.summary.factuality,
+        'claims': valid_claims(),
+    }
 
     messages = [
-        {'role': 'system', 'content': 'You are an assistant that creates engaging tweets.'},
-        {'role': 'user', 'content': PROMPT.replace('xxx', text)},
+        {'role': 'system', 'content': SYSTEM_PROMPT},
+        {'role': 'user', 'content': json.dumps(user_content)},
     ]
     client = OpenAI()
     response = client.chat.completions.create(
@@ -148,7 +176,7 @@ def ntfy():
                   headers={
                       "Title": "ERROR",
                       "Priority": "urgent",
-                      "Tags": "warning,skull"
+                      "Tags": "skull"
                   })
 
 
@@ -183,7 +211,8 @@ def main():
             content = modal_normalization(args.modal, row['full_text'])
             result = factcheck.check_text(content)
 
-            summary = tweet_summary(text=json.dumps(result))
+            summary = tweet_summary(result=result)
+            print(summary)
 
             result['metadata'] = {
                 'id': row['id'],
